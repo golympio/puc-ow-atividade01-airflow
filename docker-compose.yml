@@ -1,0 +1,154 @@
+# =============================================================================
+# Atividade 1 - ShopBrasil
+# Apache Airflow 2.x + PostgreSQL metadata DB + PostgreSQL analitico
+# =============================================================================
+# USO:
+#   docker compose up -d
+#   docker compose ps
+#   docker compose logs -f airflow-scheduler
+#   docker compose down
+# =============================================================================
+
+x-airflow-common: &airflow-common
+  image: apache/airflow:2.9.3-python3.11
+  environment: &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres-meta/airflow
+    AIRFLOW__CORE__FERNET_KEY: "46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLt0nfd7cA="
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__WEBSERVER__SECRET_KEY: "shopbrasil-lab-secret-key"
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
+    AIRFLOW__API__AUTH_BACKENDS: "airflow.api.auth.backend.basic_auth"
+    _PIP_ADDITIONAL_REQUIREMENTS: "apache-airflow-providers-postgres==5.11.0 pandas==2.2.2 requests==2.32.3 psycopg2-binary==2.9.9"
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+    - ./plugins:/opt/airflow/plugins
+  depends_on:
+    postgres-meta:
+      condition: service_healthy
+  networks:
+    - airflow-net
+
+services:
+  postgres-meta:
+    image: postgres:16
+    container_name: airflow-meta-db
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-meta-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    networks:
+      - airflow-net
+
+  postgres-shopbrasil:
+    image: postgres:16
+    container_name: shopbrasil-db
+    environment:
+      POSTGRES_USER: shopbrasil
+      POSTGRES_PASSWORD: shopbrasil123
+      POSTGRES_DB: shopbrasil
+    volumes:
+      - postgres-shopbrasil-data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "shopbrasil"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    networks:
+      - airflow-net
+
+  airflow-init:
+    <<: *airflow-common
+    container_name: airflow-init
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate
+        airflow users create \
+          --username admin \
+          --firstname Admin \
+          --lastname ShopBrasil \
+          --role Admin \
+          --email admin@shopbrasil.local \
+          --password admin || true
+        airflow connections delete postgres_shopbrasil || true
+        airflow connections add postgres_shopbrasil \
+          --conn-type postgres \
+          --conn-host postgres-shopbrasil \
+          --conn-login shopbrasil \
+          --conn-password shopbrasil123 \
+          --conn-schema shopbrasil \
+          --conn-port 5432
+        airflow pools set ecommerce_pool 2 "Limite de concorrencia para calculos por categoria"
+        echo "=== Airflow inicializado. Acesse http://localhost:8080 ==="
+    environment:
+      <<: *airflow-common-env
+      _AIRFLOW_DB_MIGRATE: "true"
+      _AIRFLOW_WWW_USER_CREATE: "true"
+    depends_on:
+      postgres-meta:
+        condition: service_healthy
+      postgres-shopbrasil:
+        condition: service_healthy
+    restart: "no"
+
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: airflow-scheduler
+    command: scheduler
+    healthcheck:
+      test: ["CMD-SHELL", "airflow jobs check --job-type SchedulerJob --hostname \"$${HOSTNAME}\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    depends_on:
+      postgres-meta:
+        condition: service_healthy
+      postgres-shopbrasil:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-webserver:
+    <<: *airflow-common
+    container_name: airflow-webserver
+    command: webserver
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    depends_on:
+      postgres-meta:
+        condition: service_healthy
+      postgres-shopbrasil:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+
+volumes:
+  postgres-meta-data:
+  postgres-shopbrasil-data:
+
+networks:
+  airflow-net:
+    driver: bridge

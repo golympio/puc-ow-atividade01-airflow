@@ -1,0 +1,32 @@
+# artefatos internos (nunca devem ser versionados)
+.ia/
+materiais/
+*.prompt.md
+PRD*.md
+HANDOFF*.md
+comandos_*
+aula*.md
+Atividade-*
+.codex/
+.agents/
+.claude/
+
+# runtime do Airflow
+
+# arquivos soltos do Windows / pacotes
+*.zip
+*Zone.Identifier
+
+# dependências e ambiente
+node_modules/
+__pycache__/
+.venv/
+venv/
+*.pyc
+.env
+.env.*
+
+# sistema / editor
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,69 @@
+from __future__ import annotations
+
+from typing import Any, Sequence
+
+from airflow.models import BaseOperator
+from airflow.providers.postgres.hooks.postgres import PostgresHook
+
+
+class ValidateClimaOperator(BaseOperator):
+    """
+    Valida se a quantidade carregada pela DAG corresponde
+    à quantidade encontrada no PostgreSQL para o mesmo run_id.
+    """
+
+    template_fields: Sequence[str] = ("total_esperado",)
+
+    def __init__(
+        self,
+        *,
+        postgres_conn_id: str,
+        total_esperado: int,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(**kwargs)
+        self.postgres_conn_id = postgres_conn_id
+        self.total_esperado = total_esperado
+
+    def execute(self, context: dict) -> int:
+        run_id = context["run_id"]
+
+        hook = PostgresHook(
+            postgres_conn_id=self.postgres_conn_id,
+        )
+
+        resultado = hook.get_first(
+            """
+            SELECT
+                COUNT(*),
+                ROUND(AVG(temperatura_c)::numeric, 2)
+            FROM clima
+            WHERE dag_run_id = %s
+            """,
+            parameters=(run_id,),
+        )
+
+        total_encontrado, temperatura_media = resultado
+        total_esperado = int(self.total_esperado)
+
+        self.log.info(
+            "Validação da run %s: esperado=%d, encontrado=%d",
+            run_id,
+            total_esperado,
+            total_encontrado,
+        )
+        self.log.info(
+            "Temperatura média geral: %s°C",
+            temperatura_media or 0,
+        )
+
+        if total_encontrado != total_esperado:
+            raise ValueError(
+                "Validação falhou: "
+                f"esperado={total_esperado}, "
+                f"encontrado={total_encontrado}"
+            )
+
+        self.log.info("Validação concluída com sucesso")
+        return total_encontrado
+

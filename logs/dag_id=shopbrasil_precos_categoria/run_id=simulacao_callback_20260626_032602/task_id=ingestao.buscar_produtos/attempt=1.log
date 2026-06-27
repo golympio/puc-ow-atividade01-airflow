@@ -1,0 +1,53 @@
+[2026-06-26T06:26:45.419+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2026-06-26T06:26:45.448+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: shopbrasil_precos_categoria.ingestao.buscar_produtos simulacao_callback_20260626_032602 [queued]>
+[2026-06-26T06:26:45.454+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: shopbrasil_precos_categoria.ingestao.buscar_produtos simulacao_callback_20260626_032602 [queued]>
+[2026-06-26T06:26:45.454+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2026-06-26T06:26:45.464+0000] {taskinstance.py:2330} INFO - Executing <Task(_PythonDecoratedOperator): ingestao.buscar_produtos> on 2026-06-26 06:26:44+00:00
+[2026-06-26T06:26:45.467+0000] {standard_task_runner.py:64} INFO - Started process 884 to run task
+[2026-06-26T06:26:45.469+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'shopbrasil_precos_categoria', 'ingestao.buscar_produtos', 'simulacao_callback_20260626_032602', '--job-id', '20', '--raw', '--subdir', 'DAGS_FOLDER/shopbrasil_precos_categoria.py', '--cfg-path', '/tmp/tmpbme_1t8h']
+[2026-06-26T06:26:45.470+0000] {standard_task_runner.py:91} INFO - Job 20: Subtask ingestao.buscar_produtos
+[2026-06-26T06:26:45.515+0000] {task_command.py:426} INFO - Running <TaskInstance: shopbrasil_precos_categoria.ingestao.buscar_produtos simulacao_callback_20260626_032602 [running]> on host 04d8fe5969ce
+[2026-06-26T06:26:45.738+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='shopbrasil' AIRFLOW_CTX_DAG_ID='shopbrasil_precos_categoria' AIRFLOW_CTX_TASK_ID='ingestao.buscar_produtos' AIRFLOW_CTX_EXECUTION_DATE='2026-06-26T06:26:44+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='simulacao_callback_20260626_032602'
+[2026-06-26T06:26:45.738+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2026-06-26T06:26:46.614+0000] {shopbrasil_precos_categoria.py:109} ERROR - Falha ao buscar produtos em https://fakestoreapi.com/rota-invalida-simulacao-callback
+Traceback (most recent call last):
+  File "/opt/airflow/dags/shopbrasil_precos_categoria.py", line 88, in buscar_produtos
+    response.raise_for_status()
+  File "/home/airflow/.local/lib/python3.11/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://fakestoreapi.com/rota-invalida-simulacao-callback
+[2026-06-26T06:26:46.615+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2026-06-26T06:26:46.616+0000] {taskinstance.py:2905} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/models/taskinstance.py", line 460, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/models/taskinstance.py", line 432, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 401, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/decorators/base.py", line 265, in execute
+    return_value = super().execute(context)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/models/baseoperator.py", line 401, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/operators/python.py", line 235, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/operators/python.py", line 252, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/shopbrasil_precos_categoria.py", line 88, in buscar_produtos
+    response.raise_for_status()
+  File "/home/airflow/.local/lib/python3.11/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://fakestoreapi.com/rota-invalida-simulacao-callback
+[2026-06-26T06:26:46.623+0000] {taskinstance.py:1206} INFO - Marking task as UP_FOR_RETRY. dag_id=shopbrasil_precos_categoria, task_id=ingestao.buscar_produtos, run_id=simulacao_callback_20260626_032602, execution_date=20260626T062644, start_date=20260626T062645, end_date=20260626T062646
+[2026-06-26T06:26:46.624+0000] {shopbrasil_precos_categoria.py:49} WARNING - shopbrasil_task_event={"dag_id": "shopbrasil_precos_categoria", "exception": "404 Client Error: Not Found for url: https://fakestoreapi.com/rota-invalida-simulacao-callback", "run_id": "simulacao_callback_20260626_032602", "status": "retry", "task_id": "ingestao.buscar_produtos"}
+[2026-06-26T06:26:46.634+0000] {standard_task_runner.py:110} ERROR - Failed to execute job 20 for task ingestao.buscar_produtos (404 Client Error: Not Found for url: https://fakestoreapi.com/rota-invalida-simulacao-callback; 884)
+[2026-06-26T06:26:46.645+0000] {local_task_job_runner.py:243} INFO - Task exited with return code 1
+[2026-06-26T06:26:46.670+0000] {taskinstance.py:3503} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2026-06-26T06:26:46.672+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

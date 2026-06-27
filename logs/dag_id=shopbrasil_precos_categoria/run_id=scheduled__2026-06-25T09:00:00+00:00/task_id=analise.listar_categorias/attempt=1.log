@@ -1,0 +1,18 @@
+[2026-06-26T09:00:03.860+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2026-06-26T09:00:03.886+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: shopbrasil_precos_categoria.analise.listar_categorias scheduled__2026-06-25T09:00:00+00:00 [queued]>
+[2026-06-26T09:00:03.892+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: shopbrasil_precos_categoria.analise.listar_categorias scheduled__2026-06-25T09:00:00+00:00 [queued]>
+[2026-06-26T09:00:03.892+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 1
+[2026-06-26T09:00:03.901+0000] {taskinstance.py:2330} INFO - Executing <Task(_PythonDecoratedOperator): analise.listar_categorias> on 2026-06-25 09:00:00+00:00
+[2026-06-26T09:00:03.905+0000] {standard_task_runner.py:64} INFO - Started process 4476 to run task
+[2026-06-26T09:00:03.907+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'shopbrasil_precos_categoria', 'analise.listar_categorias', 'scheduled__2026-06-25T09:00:00+00:00', '--job-id', '33', '--raw', '--subdir', 'DAGS_FOLDER/shopbrasil_precos_categoria.py', '--cfg-path', '/tmp/tmpgtllfund']
+[2026-06-26T09:00:03.908+0000] {standard_task_runner.py:91} INFO - Job 33: Subtask analise.listar_categorias
+[2026-06-26T09:00:03.950+0000] {task_command.py:426} INFO - Running <TaskInstance: shopbrasil_precos_categoria.analise.listar_categorias scheduled__2026-06-25T09:00:00+00:00 [running]> on host 04d8fe5969ce
+[2026-06-26T09:00:04.165+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='shopbrasil' AIRFLOW_CTX_DAG_ID='shopbrasil_precos_categoria' AIRFLOW_CTX_TASK_ID='analise.listar_categorias' AIRFLOW_CTX_EXECUTION_DATE='2026-06-25T09:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2026-06-25T09:00:00+00:00'
+[2026-06-26T09:00:04.165+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2026-06-26T09:00:04.166+0000] {shopbrasil_precos_categoria.py:124} INFO - Categorias descobertas dinamicamente: ['electronics', 'jewelery', "men's clothing", "women's clothing"]
+[2026-06-26T09:00:04.166+0000] {python.py:237} INFO - Done. Returned value was: ['electronics', 'jewelery', "men's clothing", "women's clothing"]
+[2026-06-26T09:00:04.166+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2026-06-26T09:00:04.188+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=shopbrasil_precos_categoria, task_id=analise.listar_categorias, run_id=scheduled__2026-06-25T09:00:00+00:00, execution_date=20260625T090000, start_date=20260626T090003, end_date=20260626T090004
+[2026-06-26T09:00:04.240+0000] {local_task_job_runner.py:243} INFO - Task exited with return code 0
+[2026-06-26T09:00:04.433+0000] {taskinstance.py:3503} INFO - 4 downstream tasks scheduled from follow-on schedule check
+[2026-06-26T09:00:04.445+0000] {local_task_job_runner.py:222} INFO - ::endgroup::
