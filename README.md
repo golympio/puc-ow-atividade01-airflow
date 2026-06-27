@@ -71,6 +71,11 @@ No diretorio do repositorio:
 # Validar a configuracao sem iniciar containers
 docker compose config
 
+# Pre-criar a pasta de logs no dono que o container do Airflow usa (UID 50000),
+# evitando que o Docker crie a pasta como root ao montar o bind mount
+mkdir -p logs
+sudo chown -R 50000:0 logs
+
 # Subir o ambiente local
 docker compose up -d
 
