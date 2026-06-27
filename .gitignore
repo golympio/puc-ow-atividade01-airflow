@@ -12,6 +12,7 @@ Atividade-*
 .claude/
 
 # runtime do Airflow
+logs/
 
 # arquivos soltos do Windows / pacotes
 *.zip

@@ -44,7 +44,7 @@ As credenciais acima sao apenas de laboratorio local.
 ## Comandos principais
 
 ```bash
-cd /home/guil/labs/puc/OW/atividades-nota/atividade01-airflow
+cd atividade01-airflow
 
 # Validar a configuracao sem iniciar containers
 docker compose config
