@@ -151,7 +151,4 @@ Depois restaure o endpoint correto e execute novamente a DAG ate sucesso.
 | Pool ausente | Conferir logs do `airflow-init` e Admin > Pools |
 | Banco sem dados | Conferir execucao da DAG e `scripts/inspecionar_resultado.py` |
 
-## Entrega
 
-Antes de publicar, fazer push, criar repositorio remoto ou postar link externo, pare e
-solicite aprovacao explicita com comandos, impacto, validacao e rollback.
