@@ -7,22 +7,23 @@ snapshot idempotente em PostgreSQL.
 ## Estrutura
 
 ```text
-atividade01-airflow/
+puc-ow-atividade01-airflow/
 ├── docker-compose.yml
 ├── dags/
 │   └── shopbrasil_precos_categoria.py
 ├── plugins/
 │   └── validar_produtos_operator.py
-├── scripts/
-│   ├── testar_dag_local.py
-│   └── inspecionar_resultado.py
 ├── sql/
 │   └── init.sql
 └── README.md
 ```
 
-O diretorio `OW/lab/lab01-airflow/` foi usado apenas como referencia e nao deve ser
-alterado para esta entrega.
+## Repositorio de entrega
+
+```bash
+git clone https://github.com/golympio/puc-ow-atividade01-airflow.git
+cd puc-ow-atividade01-airflow
+```
 
 ## Ambiente
 
@@ -41,11 +42,32 @@ alterado para esta entrega.
 
 As credenciais acima sao apenas de laboratorio local.
 
+## Requisitos atendidos
+
+| Requisito do enunciado | Implementacao |
+|---|---|
+| Projeto dockerizado | `docker-compose.yml` sobe Airflow 2.9.3, banco de metadados e PostgreSQL analitico. |
+| Fonte FakeStore API | A DAG coleta produtos em `https://fakestoreapi.com/products`. |
+| TaskFlow API | A DAG usa `@dag` e `@task`, com dependencias por chamada de funcao. |
+| XCom automatico | As tasks passam listas pequenas via `return`, sem arquivos intermediarios obrigatorios. |
+| Topologias linear, fan-out e fan-in | Fluxo linear entre ingestao, validacao, categorias, metricas e persistencia; fan-out por categoria com `.expand(...)`; fan-in em `consolidar_metricas`. |
+| Agendamento diario as 06:00 | `schedule="0 6 * * *"`, `pendulum`, timezone `America/Sao_Paulo`, `start_date` e `catchup=False`. |
+| Ingestao resiliente | Task `buscar_produtos` tem retry, exponential backoff, timeout, `try/except` e `raise`. |
+| Callbacks de ciclo de vida | `on_success_callback`, `on_retry_callback` e `on_failure_callback` registram eventos estruturados nos logs. |
+| Processamento paralelo | `calcular_metricas_categoria` usa Dynamic Task Mapping por categoria. |
+| Pool de concorrencia | Pool `ecommerce_pool` com 2 slots, configurado no `airflow-init`. |
+| TaskGroups | A DAG possui `ingestao`, `analise` e `persistencia`. |
+| Persistencia no PostgreSQL | `persistir_metricas` usa `PostgresHook` com a Connection `postgres_shopbrasil`. |
+| Idempotencia | `product_category_metrics` usa chave `(metric_date, category)` e `ON CONFLICT DO UPDATE`. |
+| Operador customizado opcional | `plugins/validar_produtos_operator.py` implementa `ValidarProdutosOperator(BaseOperator)`. |
+| Historico opcional | `product_category_metrics_history` grava historico append-only por execucao. |
+| SLA/alerta opcional | `on_failure_callback` simula alerta com `shopbrasil_alerta_simulado`. |
+
 ## Comandos principais
 
-```bash
-cd atividade01-airflow
+No diretorio do repositorio:
 
+```bash
 # Validar a configuracao sem iniciar containers
 docker compose config
 
@@ -77,15 +99,10 @@ confirmar explicitamente que a perda dos dados de laboratorio e aceitavel.
    fan-in antes da persistencia.
 
 
-## Inspecao dos resultados
+## Validacao da persistencia e idempotencia
 
-Com o ambiente rodando, execute:
-
-```bash
-python scripts/inspecionar_resultado.py
-```
-
-Ou consulte diretamente o banco analitico:
+Com o ambiente rodando e a DAG executada com sucesso, consulte diretamente o banco
+analitico:
 
 ```bash
 docker compose exec postgres-shopbrasil psql -U shopbrasil -d shopbrasil -c "SELECT * FROM v_product_category_metrics_latest;"
@@ -101,17 +118,6 @@ HAVING COUNT(*) > 1;
 ```
 
 O resultado deve retornar zero linhas, inclusive apos reprocessar a mesma data.
-
-## Teste local da logica
-
-O script abaixo testa fetch, validacao e metricas sem iniciar o Airflow:
-
-```bash
-python scripts/testar_dag_local.py
-```
-
-Esse teste usa rede externa para chamar a FakeStore API. Se a API estiver indisponivel, a
-DAG e o script devem falhar explicitamente em vez de gerar metricas incompletas.
 
 ## Callback de falha
 
@@ -135,7 +141,7 @@ Depois restaure o endpoint correto e execute novamente a DAG ate sucesso.
 - O pool `ecommerce_pool` existe com 2 slots.
 - Uma execucao manual da DAG termina com todas as tasks em sucesso.
 - O grafo mostra TaskGroups, trecho linear, fan-out mapeado e fan-in.
-- `python scripts/inspecionar_resultado.py` lista metricas por categoria.
+- A consulta em `v_product_category_metrics_latest` lista metricas por categoria.
 - A consulta de duplicidade retorna zero linhas.
 - Logs do scheduler mostram callback de sucesso e, em simulacao controlada, retry/falha
   com `shopbrasil_task_event` ou `shopbrasil_alerta_simulado`.
@@ -149,6 +155,4 @@ Depois restaure o endpoint correto e execute novamente a DAG ate sucesso.
 | Erro de importacao | Conferir `dags/shopbrasil_precos_categoria.py` e plugins |
 | Connection ausente | Conferir logs do `airflow-init` |
 | Pool ausente | Conferir logs do `airflow-init` e Admin > Pools |
-| Banco sem dados | Conferir execucao da DAG e `scripts/inspecionar_resultado.py` |
-
-
+| Banco sem dados | Conferir execucao da DAG e consultar `v_product_category_metrics_latest` |
