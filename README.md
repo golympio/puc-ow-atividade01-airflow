@@ -76,8 +76,6 @@ confirmar explicitamente que a perda dos dados de laboratorio e aceitavel.
 7. Confira no grafo os TaskGroups, o trecho linear, o fan-out mapeado por categoria e o
    fan-in antes da persistencia.
 
-As validacoes com Docker rodando e Airflow UI devem ser feitas ou confirmadas pelo humano
-responsavel na etapa final da entrega.
 
 ## Inspecao dos resultados
 
